@@ -26,6 +26,7 @@
 		nconf = module.parent.require('nconf'),
 		winston = module.parent.require('winston'),
 		async = module.parent.require('async'),
+		bnetConf = require('../nobreaks.conf.json'),
 
 		constants = Object.freeze({
 			type: 'oauth2',		// Either 'oauth' or 'oauth2'
