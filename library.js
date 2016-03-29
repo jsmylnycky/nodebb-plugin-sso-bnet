@@ -26,7 +26,6 @@
 		nconf = module.parent.require('nconf'),
 		winston = module.parent.require('winston'),
 		async = module.parent.require('async'),
-		bnetConf = require('../nobreaks.conf.json'),
 
 		constants = Object.freeze({
 			type: 'oauth2',		// Either 'oauth' or 'oauth2'
@@ -139,7 +138,7 @@
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
-					email: profile.emails[0].value,
+					email: '', //profile.emails[0].value,
 					isAdmin: profile.isAdmin
 				}, function(err, user) {
 					if (err) {
@@ -153,7 +152,7 @@
 				name: constants.name,
 				url: '/auth/' + constants.name,
 				callbackURL: '/auth/' + constants.name + '/callback',
-				icon: 'fa-check-square',
+				icon: 'fa-lock',
 				scope: (constants.scope || '').split(',')
 			});
 

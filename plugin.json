@@ -2,10 +2,10 @@
 	"id": "nodebb-plugin-sso-bnet",
 	"name": "NodeBB Battle.net SSO",
 	"description": "NodeBB Plugin that allows users to login/register via Battle.net.",
-	"url": "https://github.com/kelsin/nodebb-plugin-sso-bnet",
+	"url": "https://github.com/jsmylnycky/nodebb-plugin-sso-bnet",
 	"library": "./library.js",
 	"hooks": [
-		{ "hook": "filter:user.delete", "method": "deleteUserData" },
+		{ "hook": "static:user.delete", "method": "deleteUserData" },
 		{ "hook": "filter:auth.init", "method": "getStrategy" }
 	]
 }

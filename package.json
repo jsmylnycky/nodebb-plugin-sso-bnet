@@ -1,11 +1,11 @@
 {
   "name": "nodebb-plugin-sso-bnet",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "NodeBB Battle.net SSO",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kelsin/nodebb-plugin-sso-bnet"
+    "url": "https://github.com/jsmylnycky/nodebb-plugin-sso-bnet"
   },
   "keywords": [
     "nodebb",
@@ -17,12 +17,12 @@
     "registration"
   ],
   "author": {
-    "name": "Christopher Giroir",
-    "email": "kelsin@valefor.com"
+    "name": "Jason Smylnycky",
+    "email": "jason784@gmail.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kelsin/nodebb-plugin-sso-bnet/issues"
+    "url": "https://github.com/jsmylnycky/nodebb-plugin-sso-bnet/issues"
   },
   "readme": "",
   "readmeFilename": "README.md",
