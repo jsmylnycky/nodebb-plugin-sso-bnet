@@ -28,8 +28,8 @@
 		async = module.parent.require('async'),
 
 		constants = Object.freeze({
-			type: '',	// Either 'oauth' or 'oauth2'
-			name: '',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
+			type: 'oauth2',		// Either 'oauth' or 'oauth2'
+			name: 'bnet',		// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
 			oauth: {
 				requestTokenURL: '',
 				accessTokenURL: '',
@@ -38,12 +38,17 @@
 				consumerSecret: ''
 			},
 			oauth2: {
-				authorizationURL: '',
-				tokenURL: '',
-				clientID: '',
-				clientSecret: ''
+				authorizationURL: 'https://us.battle.net/oauth/authorize',
+				tokenURL: 'https://us.battle.net/oauth/token',
+				clientID: process.env.BNET_ID,
+				clientSecret: process.env.BNET_SECRET
 			},
-			userRoute: ''	// This is the address to your app's "user profile" API endpoint (expects JSON)
+			scope: 'wow.profile',
+
+			// This is the address to your app's "user profile" API endpoint (expects JSON)
+			userIdRoute: 'https://us.api.battle.net/account/user/id',
+			userBattletagRoute: 'https://us.api.battle.net/account/user/battletag',
+			userCharactersRoute: 'https://us.api.battle.net/wow/user/characters'
 		}),
 		configOk = false,
 		OAuth = {}, passportOAuth, opts;
@@ -52,8 +57,6 @@
 		winston.error('[sso-oauth] Please specify a name for your OAuth provider (library.js:32)');
 	} else if (!constants.type || (constants.type !== 'oauth' && constants.type !== 'oauth2')) {
 		winston.error('[sso-oauth] Please specify an OAuth strategy to utilise (library.js:31)');
-	} else if (!constants.userRoute) {
-		winston.error('[sso-oauth] User Route required (library.js:31)');
 	} else {
 		configOk = true;
 	}
@@ -89,19 +92,44 @@
 				opts.callbackURL = nconf.get('url') + '/auth/' + constants.name + '/callback';
 
 				passportOAuth.Strategy.prototype.userProfile = function(accessToken, done) {
-					this._oauth2.get(constants.userRoute, accessToken, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user profile', err)); }
+					var _this = this;
+					return _this._oauth2.get(constants.userIdRoute, accessToken, function(err, body, res) {
+						if (err) { return done(new InternalOAuthError('failed to fetch user id', err)); }
 
+						var idJson = {};
 						try {
-							var json = JSON.parse(body);
-							OAuth.parseUserReturn(json, function(err, profile) {
-								if (err) return done(err);
-								profile.provider = constants.name;
-								done(null, profile);
-							});
+							idJson = JSON.parse(body);
 						} catch(e) {
-							done(e);
+							return done(e);
 						}
+
+						return _this._oauth2.get(constants.userBattletagRoute, accessToken, function(err, body, res) {
+							if (err) { return done(new InternalOAuthError('failed to fetch user battletag', err)); }
+
+							var battletagJson = {};
+							try {
+								battletagJson = JSON.parse(body);
+							} catch(e) {
+								return done(e);
+							}
+
+							return _this._oauth2.get(constants.userCharactersRoute, accessToken, function(err, body, res) {
+								if (err) { return done(new InternalOAuthError('failed to fetch user battletag', err)); }
+
+								var charactersJson = {};
+								try {
+									charactersJson = JSON.parse(body);
+								} catch(e) {
+									return done(e);
+								}
+
+								return OAuth.parseUserReturn(idJson, battletagJson, charactersJson, function(err, profile) {
+									if (err) return done(err);
+									profile.provider = constants.name;
+									return done(null, profile);
+								});
+							});
+						});
 					});
 				};
 			}
@@ -110,7 +138,7 @@
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
-					email: profile.emails[0].value,
+					email: '', //profile.emails[0].value,
 					isAdmin: profile.isAdmin
 				}, function(err, user) {
 					if (err) {
@@ -124,7 +152,7 @@
 				name: constants.name,
 				url: '/auth/' + constants.name,
 				callbackURL: '/auth/' + constants.name + '/callback',
-				icon: 'fa-check-square',
+				icon: 'fa-lock',
 				scope: (constants.scope || '').split(',')
 			});
 
@@ -134,7 +162,7 @@
 		}
 	};
 
-	OAuth.parseUserReturn = function(data, callback) {
+	OAuth.parseUserReturn = function(idJson, battletagJson, charactersJson, callback) {
 		// Alter this section to include whatever data is necessary
 		// NodeBB *requires* the following: id, displayName, emails.
 		// Everything else is optional.
@@ -143,19 +171,21 @@
 		// console.log(data);
 
 		var profile = {};
-		profile.id = data.id;
-		profile.displayName = data.name;
-		profile.emails = [{ value: data.email }];
+		profile.id = idJson.id;
+		profile.displayName = battletagJson.battletag;
+		profile.isGuild = false;
+
+		charactersJson.characters.forEach(function(character) {
+			if ((character.guild + ':' + character.guildRealm) === process.env.BNET_GUILD) {
+				profile.isGuild = true;
+			}
+		});
 
 		// Do you want to automatically make somebody an admin? This line might help you do that...
-		// profile.isAdmin = data.isAdmin ? true : false;
-
-		// Delete or comment out the next TWO (2) lines when you are ready to proceed
-		process.stdout.write('===\nAt this point, you\'ll need to customise the above section to id, displayName, and emails into the "profile" object.\n===');
-		return callback(new Error('Congrats! So far so good -- please see server log for details'));
+		profile.isAdmin = (profile.id == process.env.ADMIN_ID);
 
 		callback(null, profile);
-	}
+	};
 
 	OAuth.login = function(payload, callback) {
 		OAuth.getUidByOAuthid(payload.oAuthid, function(err, uid) {
@@ -177,6 +207,12 @@
 
 					if (payload.isAdmin) {
 						Groups.join('administrators', uid, function(err) {
+							callback(null, {
+								uid: uid
+							});
+						});
+					} else if (payload.isGuild) {
+						Groups.join('guild', uid, function(err) {
 							callback(null, {
 								uid: uid
 							});

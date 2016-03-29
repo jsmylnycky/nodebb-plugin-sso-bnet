@@ -1,16 +1,15 @@
 {
-  "name": "nodebb-plugin-sso-oauth",
-  "version": "0.2.3",
-  "description": "NodeBB Generic OAuth SSO",
+  "name": "nodebb-plugin-sso-bnet",
+  "version": "0.1.4",
+  "description": "NodeBB Battle.net SSO",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julianlam/nodebb-plugin-sso-oauth"
+    "url": "https://github.com/jsmylnycky/nodebb-plugin-sso-bnet"
   },
   "keywords": [
     "nodebb",
     "plugin",
-    "oauth",
     "oauth2",
     "sso",
     "single sign on",
@@ -18,12 +17,12 @@
     "registration"
   ],
   "author": {
-    "name": "Julian Lam",
-    "email": "julian@nodebb.org"
+    "name": "Jason Smylnycky",
+    "email": "jason784@gmail.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/julianlam/nodebb-plugin-sso-oauth/issues"
+    "url": "https://github.com/jsmylnycky/nodebb-plugin-sso-bnet/issues"
   },
   "readme": "",
   "readmeFilename": "README.md",
