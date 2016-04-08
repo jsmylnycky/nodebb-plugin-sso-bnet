@@ -72,7 +72,7 @@
 
 				passportOAuth.Strategy.prototype.userProfile = function(token, secret, params, done) {
 					this._oauth.get(constants.userRoute, token, secret, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user profile', err)); }
+						if (err) { console.log('userProfile 1 error', err); return done(new Error(err)); }
 
 						try {
 							var json = JSON.parse(body);
@@ -97,7 +97,8 @@
 					return _this._oauth2.get(constants.userIdRoute, accessToken, function(err, body, res) {
 						if (err) {
 							console.log('userIdRoute', accessToken, err);
-							return done(new InternalOAuthError('failed to fetch user id', err));
+							console.log('failed to fetch user id');
+							return done(new Error(err));
 						}
 
 						var idJson = {};
@@ -110,7 +111,8 @@
 						return _this._oauth2.get(constants.userBattletagRoute, accessToken, function(err, body, res) {
 							if (err) {
 								console.log('userBattletagRoute', accessToken, err);
-								return done(new InternalOAuthError('failed to fetch user battletag', err));
+								console.log('failed to fetch user battletag');
+								return done(new Error(err));
 							}
 
 							var battletagJson = {};
@@ -123,7 +125,8 @@
 							return _this._oauth2.get(constants.userCharactersRoute, accessToken, function(err, body, res) {
 								if (err) {
 									console.log('userCharactersRoute', accessToken, err);
-									return done(new InternalOAuthError('failed to fetch user characters', err));
+									console.log('failed to fetch user characters');
+									return done(new Error(err));
 								}
 
 								var charactersJson = {};
