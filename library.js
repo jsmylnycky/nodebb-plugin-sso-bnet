@@ -93,8 +93,12 @@
 
 				passportOAuth.Strategy.prototype.userProfile = function(accessToken, done) {
 					var _this = this;
+					console.log('accessToken', accessToken);
 					return _this._oauth2.get(constants.userIdRoute, accessToken, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user id', err)); }
+						if (err) {
+							console.log('userIdRoute', accessToken, err);
+							return done(new InternalOAuthError('failed to fetch user id', err));
+						}
 
 						var idJson = {};
 						try {
@@ -104,7 +108,10 @@
 						}
 
 						return _this._oauth2.get(constants.userBattletagRoute, accessToken, function(err, body, res) {
-							if (err) { return done(new InternalOAuthError('failed to fetch user battletag', err)); }
+							if (err) {
+								console.log('userBattletagRoute', accessToken, err);
+								return done(new InternalOAuthError('failed to fetch user battletag', err));
+							}
 
 							var battletagJson = {};
 							try {
@@ -114,7 +121,10 @@
 							}
 
 							return _this._oauth2.get(constants.userCharactersRoute, accessToken, function(err, body, res) {
-								if (err) { return done(new InternalOAuthError('failed to fetch user battletag', err)); }
+								if (err) {
+									console.log('userCharactersRoute', accessToken, err);
+									return done(new InternalOAuthError('failed to fetch user characters', err));
+								}
 
 								var charactersJson = {};
 								try {
@@ -142,6 +152,7 @@
 					isAdmin: profile.isAdmin
 				}, function(err, user) {
 					if (err) {
+						console.log('login error', err);
 						return done(err);
 					}
 					done(null, user);
@@ -168,7 +179,9 @@
 		// Everything else is optional.
 
 		// Find out what is available by uncommenting this line:
-		// console.log(data);
+		console.log(idJson);
+		console.log(battletagJson);
+		console.log(charactersJson);
 
 		var profile = {};
 		profile.id = idJson.id;
