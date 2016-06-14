@@ -79,6 +79,8 @@
 							OAuth.parseUserReturn(json, function(err, profile) {
 								if (err) return done(err);
 								profile.provider = constants.name;
+
+								authenticationController.onSuccessfulLogin(req, user.uid);
 								done(null, profile);
 							});
 						} catch(e) {
@@ -168,7 +170,6 @@
 		// Everything else is optional.
 
 		// Find out what is available by uncommenting this line:
-		// console.log(data);
 
 		var profile = {};
 		profile.id = idJson.id;
@@ -212,7 +213,7 @@
 							});
 						});
 					} else if (payload.isGuild) {
-						Groups.join('guild', uid, function(err) {
+						Groups.join('members', uid, function(err) {
 							callback(null, {
 								uid: uid
 							});
